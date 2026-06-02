@@ -2,11 +2,11 @@
 
 import { python } from "@codemirror/lang-python";
 import CodeMirror from "@uiw/react-codemirror";
-import { CheckCircle2, Image as ImageIcon, Play, Send, XCircle } from "lucide-react";
+import { Image as ImageIcon, Play, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SubmitCelebration } from "@/components/submit-celebration";
 import { difficultyBadgeClass, submissionStatusBadgeClass, submissionStatusLabel } from "@/lib/badges";
-import type { FeedbackMessage, Problem, RunResult, SubmissionStatus, TestCase } from "@/lib/types";
+import type { FeedbackMessage, Problem, SubmissionStatus, TestCase } from "@/lib/types";
 
 export function PracticeWorkspace({
   problem,
@@ -22,7 +22,6 @@ export function PracticeWorkspace({
   initialMessages?: FeedbackMessage[];
 }) {
   const [code, setCode] = useState(problem.starterCode);
-  const [results, setResults] = useState<RunResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [note, setNote] = useState("");
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus | null>(initialStatus ?? null);
@@ -32,13 +31,12 @@ export function PracticeWorkspace({
   const [feedbackBody, setFeedbackBody] = useState("");
   const [feedbackMessages, setFeedbackMessages] = useState<FeedbackMessage[]>(initialMessages);
   const visibleCases = useMemo(() => testCases.filter((test) => !test.isHidden), [testCases]);
-  const passed = results.filter((result) => result.passed).length;
 
   async function runCode(submit = false) {
     setIsRunning(true);
     setSubmitMessage("");
     if (submit) setShowNiceGif(false);
-    let payload: { results?: RunResult[]; submitted?: boolean; status?: SubmissionStatus; submissionId?: string; error?: string };
+    let payload: { submitted?: boolean; status?: SubmissionStatus; submissionId?: string; error?: string };
 
     try {
       const response = await fetch("/api/run-python", {
@@ -51,7 +49,6 @@ export function PracticeWorkspace({
       payload = { error: "Cannot connect to the runner. Please try again." };
     }
 
-    setResults(payload.results ?? []);
     if (payload.error) {
       setSubmitMessage(payload.error);
       setIsRunning(false);
@@ -64,6 +61,8 @@ export function PracticeWorkspace({
       setFeedbackMessages([]);
       setSubmitMessage("Submitted. Status is pending for admin review.");
       setShowNiceGif(true);
+    } else {
+      setSubmitMessage("Run completed.");
     }
     setIsRunning(false);
   }
@@ -197,29 +196,6 @@ export function PracticeWorkspace({
           </div>
         </div>
 
-        <div className="rounded-lg border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Run Results</h2>
-            {!!results.length && <span className="text-sm font-semibold">{passed}/{results.length} passed</span>}
-          </div>
-          <div className="space-y-2">
-            {results.map((result) => (
-              <div className="rounded-md border border-black/10 p-3 dark:border-white/10" key={result.testCaseId}>
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    {result.passed ? <CheckCircle2 className="text-mint" size={18} /> : <XCircle className="text-coral" size={18} />}
-                    <span className="text-sm font-medium">{result.name}</span>
-                  </div>
-                  <span className="text-xs text-black/50 dark:text-white/45">{result.durationMs}ms</span>
-                </div>
-                {!result.hidden && !result.passed && (
-                  <pre className="mt-3 overflow-auto rounded bg-black/[0.04] p-2 text-xs dark:bg-black/35">{result.error || `Output: ${result.output}\nExpected: ${result.expectedOutput}`}</pre>
-                )}
-              </div>
-            ))}
-            {!results.length && <p className="text-sm text-black/55 dark:text-white/55">Run your code to see testcase results.</p>}
-          </div>
-        </div>
       </section>
     </div>
   );
