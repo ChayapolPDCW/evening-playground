@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #f7f4ee;
+  color: #171717;
+}
+
+.dark body {
+  background: #151515;
+  color: #f5f0e7;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(86, 197, 150, 0.32);
+}
+
+.brand-wave {
+  display: inline-block;
+  color: #ef7b64;
+  background-image: linear-gradient(
+    100deg,
+    #ef7b64 0%,
+    #ef7b64 32%,
+    #ffffff 44%,
+    #ffd0c4 50%,
+    #ffffff 56%,
+    #ef7b64 68%,
+    #ef7b64 100%
+  );
+  background-size: 240% 100%;
+  background-position: 140% 50%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: brand-shine 9.4s infinite linear;
+  animation-fill-mode: forwards;
+  text-fill-color: transparent;
+  will-change: background-position;
+  white-space: nowrap;
+}
+
+.brand-wave:hover {
+  color: #ef7b64;
+}
+
+.typing-label {
+  display: inline-block;
+  max-width: max-content;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid currentColor;
+  animation: typing 2.2s steps(18, end) both, caret-blink 0.8s step-end infinite;
+}
+
+@keyframes brand-shine {
+  0% {
+    background-position: 140% 50%;
+  }
+  100% {
+    background-position: -140% 50%;
+  }
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 18ch;
+  }
+}
+
+@keyframes caret-blink {
+  50% {
+    border-color: transparent;
+  }
+}
