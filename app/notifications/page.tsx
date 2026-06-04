@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { markNotificationsRead } from "@/app/notifications/actions";
 import { getSessionProfile } from "@/lib/auth";
@@ -7,7 +8,8 @@ import { createClient } from "@/lib/supabase/server";
 import { one } from "@/lib/supabase/shape";
 
 export default async function NotificationsPage() {
-  const { user, profile } = await getSessionProfile();
+  const { user, profile, expired } = await getSessionProfile();
+  if (expired) redirect("/session-expired");
   if (!user || !profile) {
     return null;
   }

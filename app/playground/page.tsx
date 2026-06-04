@@ -114,15 +114,8 @@ export default async function PlaygroundPage({
             </div>
             <h2 className="text-lg font-semibold group-hover:text-plum dark:group-hover:text-mint">{problem.title}</h2>
             <p className="mt-2 line-clamp-3 text-sm leading-6 text-black/60 dark:text-white/60">{problem.prompt}</p>
-            <div className="mt-5 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-mint">
-                <CheckCircle2 size={16} /> Open practice
-              </div>
-              {latestByProblem.get(problem.id) && (
-                <span className="text-xs text-black/50 dark:text-white/45">
-                  Tests {latestByProblem.get(problem.id)!.passedCount}/{latestByProblem.get(problem.id)!.totalCount}
-                </span>
-              )}
+            <div className="mt-5 flex items-center gap-2 text-sm font-medium text-mint">
+              <CheckCircle2 size={16} /> Open practice
             </div>
           </Link>
         ))}

@@ -23,7 +23,6 @@ export function PracticeWorkspace({
 }) {
   const [code, setCode] = useState(problem.starterCode);
   const [isRunning, setIsRunning] = useState(false);
-  const [note, setNote] = useState("");
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus | null>(initialStatus ?? null);
   const [submitMessage, setSubmitMessage] = useState("");
   const [showNiceGif, setShowNiceGif] = useState(false);
@@ -42,7 +41,7 @@ export function PracticeWorkspace({
       const response = await fetch("/api/run-python", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ problemId: problem.id, code, testCases, submit, note }),
+        body: JSON.stringify({ problemId: problem.id, code, testCases, submit, note: "" }),
       });
       payload = (await response.json()) as typeof payload;
     } catch {
@@ -50,6 +49,10 @@ export function PracticeWorkspace({
     }
 
     if (payload.error) {
+      if (payload.error.toLowerCase().includes("session expired")) {
+        window.location.href = "/";
+        return;
+      }
       setSubmitMessage(payload.error);
       setIsRunning(false);
       return;
@@ -78,7 +81,13 @@ export function PracticeWorkspace({
     });
     const payload = (await response.json()) as { message?: FeedbackMessage; error?: string };
     if (payload.message) setFeedbackMessages((current) => [...current, payload.message!]);
-    if (payload.error) setSubmitMessage(payload.error);
+    if (payload.error) {
+      if (payload.error.toLowerCase().includes("session expired")) {
+        window.location.href = "/";
+        return;
+      }
+      setSubmitMessage(payload.error);
+    }
   }
 
   return (
@@ -120,9 +129,9 @@ export function PracticeWorkspace({
 
       <section className="space-y-4">
         <div className="overflow-hidden rounded-lg border border-black/10 bg-white dark:border-white/10 dark:bg-white/5">
-          <div className="flex items-center justify-between border-b border-black/10 px-4 py-3 dark:border-white/10">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/10 px-4 py-3 dark:border-white/10">
             <p className="text-sm font-semibold">Python IDE</p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {submissionStatus && <SubmissionStatusBadge status={submissionStatus} />}
               <button className="inline-flex h-9 items-center gap-2 rounded-md border border-black/10 px-3 text-sm font-semibold dark:border-white/10" disabled={isRunning} onClick={() => runCode(false)} type="button">
                 <Play size={16} /> Run
@@ -142,12 +151,6 @@ export function PracticeWorkspace({
           />
         </div>
 
-        <textarea
-          className="min-h-24 w-full rounded-lg border border-black/10 bg-white p-3 text-sm outline-none focus:border-mint dark:border-white/10 dark:bg-white/5"
-          onChange={(event) => setNote(event.target.value)}
-          placeholder="Optional note for admin..."
-          value={note}
-        />
         {submitMessage && (
           <div className="rounded-md border border-mint/30 bg-mint/10 px-3 py-2 text-sm font-medium text-ink dark:text-paper">
             {submitMessage}
@@ -156,7 +159,7 @@ export function PracticeWorkspace({
         <SubmitCelebration show={showNiceGif} />
 
         <div className="rounded-lg border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-          <h2 className="mb-3 text-sm font-semibold">Feedback Chat</h2>
+          <h2 className="mb-3 text-sm font-semibold">Ask a Question</h2>
           <div className="mb-3 max-h-64 space-y-3 overflow-auto">
             {feedbackMessages.map((message) => (
               <div
@@ -172,7 +175,7 @@ export function PracticeWorkspace({
             ))}
             {!feedbackMessages.length && (
               <p className="text-sm text-black/55 dark:text-white/55">
-                {submissionId ? "No messages yet." : "Submit first to start a feedback thread."}
+                {submissionId ? "No questions yet." : "Submit first to ask a question."}
               </p>
             )}
           </div>
@@ -187,7 +190,7 @@ export function PracticeWorkspace({
                   void sendFeedback();
                 }
               }}
-              placeholder={submissionId ? "Reply to admin..." : "Submit first to chat"}
+              placeholder={submissionId ? "Ask about this submission..." : "Submit first to ask a question"}
               value={feedbackBody}
             />
             <button className="h-10 rounded-md bg-mint px-4 text-sm font-semibold text-ink disabled:opacity-50" disabled={!submissionId} onClick={sendFeedback} type="button">

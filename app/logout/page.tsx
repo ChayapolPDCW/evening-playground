@@ -1,4 +1,5 @@
 import { LogoutRedirect } from "@/components/logout-redirect";
+import { clearSessionStarted } from "@/lib/session-timeout";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -6,6 +7,7 @@ export const dynamic = "force-dynamic";
 export default async function LogoutPage() {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  await clearSessionStarted();
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-paper px-5 text-ink dark:bg-[#151515] dark:text-paper">
