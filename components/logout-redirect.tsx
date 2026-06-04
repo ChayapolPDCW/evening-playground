@@ -7,6 +7,8 @@ export function LogoutRedirect() {
   const router = useRouter();
 
   useEffect(() => {
+    void fetch("/logout/complete", { method: "POST" });
+
     const timer = window.setTimeout(() => {
       router.replace("/");
     }, 1800);
