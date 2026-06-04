@@ -5,7 +5,8 @@ import { one } from "@/lib/supabase/shape";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { user, profile } = await getSessionProfile();
+  const { user, profile, expired } = await getSessionProfile();
+  if (expired) redirect("/session-expired");
   if (!user || !profile) redirect("/login");
 
   const supabase = createAdminClient();

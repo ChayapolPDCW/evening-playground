@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { usernameToInternalEmail } from "@/lib/auth-identity";
+import { markSessionStarted } from "@/lib/session-timeout";
 
 export async function login(formData: FormData) {
   if (!hasSupabaseConfig()) redirect("/login?error=config");
@@ -25,9 +26,13 @@ export async function login(formData: FormData) {
         data: { user },
       } = await supabase.auth.getUser();
       const { data: profile } = await supabase.from("profiles").select("role").eq("id", user?.id).single();
-      if (profile?.role === "admin") destination = "/admin";
-      else if (profile?.role === "student") destination = "/playground";
-      else destination = "/login?error=profile";
+      if (profile?.role === "admin") {
+        await markSessionStarted();
+        destination = "/admin";
+      } else if (profile?.role === "student") {
+        await markSessionStarted();
+        destination = "/playground";
+      } else destination = "/login?error=profile";
     }
   } catch {
     destination = "/login?error=config";

@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { clearSessionStarted, isSessionExpired } from "@/lib/session-timeout";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { RunResult } from "@/lib/types";
@@ -109,6 +110,11 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "Please log in again before submitting.", results }, { status: 401 });
+    }
+    if (await isSessionExpired()) {
+      await sessionClient.auth.signOut();
+      await clearSessionStarted();
+      return NextResponse.json({ error: "Session expired. Please log in again.", results }, { status: 401 });
     }
 
     const { data: submission, error } = await supabase
